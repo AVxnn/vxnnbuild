@@ -3,8 +3,7 @@ import {
     Route,
     Routes,
 } from "react-router-dom";
-import Authorization
-  from "./pages/authorization/authorization";
+import Authorization from "./pages/authorization/authorization";
 import Welcome from "./pages/welcome/welcome";
 
 function App() {

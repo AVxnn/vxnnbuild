@@ -9,16 +9,22 @@ import {
     changeActive
 } from "../../store/helperSlice";
 import {useNavigate} from "react-router-dom";
+import {getAuth , RecaptchaVerifier, signInWithPhoneNumber } from "firebase/auth";
 
 const Authorization = () => {
-
     let navigate = useNavigate();
     const count = useSelector(state => state.helper)
     const dispatch = useDispatch()
 
+    const auth = getAuth()
+
+
+    const [capth, setCapth] = useState(false)
     const [data, setData] = useState({
         name: '',
-        password: '',
+        email: '',
+        phone: '',
+        password: null,
         avatar: ''
     })
     console.log(count)
@@ -29,20 +35,59 @@ const Authorization = () => {
         })
     }
 
+    const join = (item) => {
+        let confirmationResult = window.confirmationResult;
+        confirmationResult.confirm(data.password).then((result) => {
+            // User signed in successfully.
+            const user = result.user;
+            console.log(result)
+            // ...
+        }).catch((error) => {
+            // User couldn't sign in (bad verification code?)
+            // ...
+        });
+    }
+
+    const sendCodePhone = () => {
+        let appVerifier = window.recaptchaVerifier
+        setCapth(true)
+        if (!capth) {
+            window.recaptchaVerifier = new RecaptchaVerifier('recaptcha-container', {
+                'size': 'invisible',
+                'callback': (response) => {
+                    // reCAPTCHA solved, allow signInWithPhoneNumber.
+                }
+            }, auth);
+        }
+        dispatch(addTitle('Скоро вам придет SMS с кодом'))
+        dispatch(changeActive(false))
+        signInWithPhoneNumber(auth, data.phone, appVerifier)
+            .then((confirmationResult) => {
+                // SMS sent. Prompt user to type the code from the message, then sign the
+                // user in with confirmationResult.confirm(code).
+                window.confirmationResult = confirmationResult;
+                console.log(confirmationResult)
+                // ...
+            }).catch((error) => {
+            // Error; SMS not sent
+            console.log(error)
+            // ...
+        });
+    }
+
     useEffect(() => {
         dispatch(changeActive(false))
         dispatch(addWow(''))
-        dispatch(addTitle(''))
+        dispatch(addTitle('Привет, давай знакомиться'))
         if (data.name.length >= 3) {
-            dispatch(addTitle('Отличное имя'))
+            dispatch(addTitle('Классное имя'))
         }
-        if (data.password.length >= 6) {
+        if (data.phone.length >= 6) {
             dispatch(addTitle('А пароль интересный)'))
         }
-        if (data.password.length >= 6 && data.name.length >= 3) {
-            dispatch(addTitle('Нажми на меня'))
+        if (data.phone.length >= 10 && data.name.length >= 3) {
+            dispatch(addTitle('Нажми на кнопку "Отправить код"'))
             dispatch(changeActive(true))
-            dispatch(addWow('/main'))
         }
     }, [data])
     useEffect(() => {
@@ -59,11 +104,21 @@ const Authorization = () => {
                             <Hello />
                         </section>
                         <Form onChange={valueChange} input={'name'} placeholder={'Как тебя зовут?'}/>
-                        <Form onChange={valueChange} input={'password'} placeholder={'Создай свой код для входа'}/>
+                        <Form onChange={valueChange} input={'phone'} placeholder={'Можешь сказать свои цифры?'}/>
+                        {/*<Form onChange={valueChange} input={'password'} placeholder={'Создай свой код для входа'}/>*/}
+                        {
+                            capth ? (
+                                <>
+                                    <Form onChange={valueChange} input={'password'} placeholder={'Введи код из SMS'}/>
+                                    <button onClick={() => join()}>Войти</button>
+                                </>
+                            ) : (
+                                <button onClick={() => sendCodePhone()}>Отправить код</button>
+                            )
+                        }
+                        <div id="recaptcha-container"></div>
                     </section>
-
                 </section>
-
             </div>
         </>
     );
