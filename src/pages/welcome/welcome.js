@@ -12,7 +12,8 @@ const Welcome = () => {
                     <h4 className={'welcome-subtitle'}>Создай свой мир с</h4>
                     <h1 className={'welcome-title'}>VXNNBUILD</h1>
                 </section>
-                <button className={'welcome-btn'}><Link to={'authorization'}>Создать</Link></button>
+                <button className={'welcome-btn'}><Link to={'registration'}>Создать</Link></button>
+                <button className={'welcome-btn'}><Link to={'authorization'}>Войти</Link></button>
             </section>
         </div>
     );

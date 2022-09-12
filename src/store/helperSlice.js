@@ -7,7 +7,7 @@ const helperSlice = createSlice({
         error: false,
         active: false,
         notification: '',
-        wow: null
+        wow: ''
     },
     reducers: {
         addTitle: (state, action) => {
